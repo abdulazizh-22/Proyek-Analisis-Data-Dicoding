@@ -33,18 +33,11 @@ start_date, end_date = st.sidebar.date_input(
     [main_data['dteday'].min(), main_data['dteday'].max()]
 )
 
-season = st.sidebar.multiselect(
-    "Pilih Musim",
-    options=main_data["season"].unique(),
-    default=main_data["season"].unique()
-)
-
 hour_range = st.sidebar.slider("Rentang Jam", 0, 23, (0, 23))
 
 filtered_data = main_data[
     (main_data['dteday'] >= pd.to_datetime(start_date)) &
     (main_data['dteday'] <= pd.to_datetime(end_date)) &
-    (main_data['season'].isin(season)) &
     (main_data['hr'] >= hour_range[0]) &
     (main_data['hr'] <= hour_range[1])
 ]
@@ -54,8 +47,8 @@ st.title("Bike-sharing Dashboard")
 st.markdown("Analisis Data Sewa Sepeda")
 
 c1, c2 = st.columns(2)
-c1.metric("Total Penyewaan", f"{filtered_data['cnt'].sum():,.0f}")
-c2.metric("Rata-rata/Jam", f"{filtered_data['cnt'].mean():.2f}")
+c1.metric("Total Sewa", f"{filtered_data['cnt'].sum():,.0f}")
+c2.metric("Sewa Rata-rata/Jam", f"{filtered_data['cnt'].mean():.2f}")
 
 st.markdown("---")
 
@@ -63,7 +56,7 @@ st.markdown("---")
 st.subheader("Tren Penyewaan Harian")
 trend = filtered_data.groupby("dteday")["cnt"].sum()
 fig, ax = plt.subplots(figsize=(12, 4))
-ax.plot(trend, color="#72BCD4", linewidth=2)
+ax.plot(trend, color="#FDF06A", linewidth=2)
 st.pyplot(fig)
 
 #Heatmap pola sewa harian
@@ -100,33 +93,7 @@ ax.set_title("Heatmap Penyewaan Sepeda Berdasarkan Hari dan Jam")
 
 st.pyplot(fig)
 
-# Pilih hari untuk analisa sewa
-st.write("---")
-st.subheader("Pola Penyewaan Harian")
-st.info("Pilih Hari untu Melihat Tren Sewa Perjamnya")
-
-selected_day = st.selectbox(
-    "Pilih Hari Spesifik:",
-    options=["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"]
-)
-
-day_to_num = {"Minggu": 0, "Senin": 1, "Selasa": 2, "Rabu": 3, "Kamis": 4, "Jumat": 5, "Sabtu": 6}
-specific_day_df = filtered_data[filtered_data['weekday'] == day_to_num[selected_day]].copy()
-specific_day_df = specific_day_df.rename(columns={"hr": "Jam"})
-
-col_l, col_r = st.columns(2)
-
-with col_l:
-    st.markdown(f"**Rata-rata Penyewaan per Jam ({selected_day})**")
-    if not specific_day_df.empty:
-        hourly_plot = specific_day_df.groupby("Jam")["cnt"].mean()
-        fig, ax = plt.subplots()
-        sns.lineplot(x=hourly_plot.index, y=hourly_plot.values, marker="o", color="#1f77b4")
-        ax.set_xlabel("Jam")
-        ax.set_ylabel("Rata-rata Penyewaan")
-        st.pyplot(fig)
-
-# Analisis perhari dan Musim
+# Analisis Sewa Berdasarkan Hari dan Musim
 st.write("---")
 col_a, col_b = st.columns(2)
 
